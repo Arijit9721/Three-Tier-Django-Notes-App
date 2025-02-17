@@ -1,0 +1,95 @@
+version: "3.8"
+
+services:
+    nginx:
+        build: 
+          context: ./nginx
+        container_name: nginx_container
+        networks: 
+          - notes-app-network
+        ports:
+          - "80:80"
+        restart: always
+        depends_on:
+           django_app_1:
+              condition: service_healthy
+           django_app_2:
+              condition: service_healthy
+
+    django_app_1:
+        build:
+          context: .
+        container_name: django_container_1
+        networks: 
+          - notes-app-network
+        ports:
+          - "8000:8000"
+        restart: always
+        environment:
+          DB_NAME: ${DB_NAME}
+          DB_USER: ${DB_USER}
+          DB_PASSWORD: ${DB_PASSWORD}
+          DB_HOST: ${DB_HOST}
+          DB_PORT: ${DB_PORT}
+        command: >
+            sh -c "python manage.py migrate --noinput &&
+            gunicorn notesapp.wsgi --bind 0.0.0.0:8000"
+        healthcheck:
+          test: ["CMD-SHELL", "curl -f http://localhost:8000/admin || exit 1"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 60s
+        depends_on:
+          mysql_db:
+              condition: service_healthy
+
+    django_app_2:
+        build:
+          context: .
+        container_name: django_container_2
+        networks: 
+          - notes-app-network
+        ports:
+          - "8001:8000"
+        restart: always
+        environment:
+          DB_NAME: ${DB_NAME}
+          DB_USER: ${DB_USER}
+          DB_PASSWORD: ${DB_PASSWORD}
+          DB_HOST: ${DB_HOST}
+          DB_PORT: ${DB_PORT}
+        command: >
+          sh -c "python manage.py migrate --noinput &&
+          gunicorn notesapp.wsgi --bind 0.0.0.0:8001"
+        healthcheck:
+          test: ["CMD-SHELL", "curl -f http://localhost:8001/admin || exit 1"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 60s
+        depends_on:
+          mysql_db:
+              condition: service_healthy
+
+    mysql_db:
+        image: mysql:latest
+        container_name: mysql_container
+        networks: 
+          - notes-app-network
+        ports:
+          - "3306:3306"
+        restart: always
+        environment:
+          MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} 
+          MYSQL_DATABASE: ${DB_NAME}
+        healthcheck:
+          test: ["CMD","mysqladmin","ping","-h","localhost", "-u${DB_USER}", "-p${DB_PASSWORD}"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 60s        
+
+networks:
+  notes-app-network:
+    driver: bridge
