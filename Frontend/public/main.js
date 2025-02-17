@@ -4,7 +4,6 @@ const form_input= document.getElementById("todo-input")
 const submit = document.getElementById("button")
 const ul = document.getElementById("todo-list")
 
-let alltodos = []
 
 // main port for the django backend
 const BASE_URL = "http://127.0.0.1:8000/api/todos/"
@@ -16,7 +15,6 @@ document.addEventListener("DOMContentLoaded", fetchTodos);
 form.addEventListener("submit",(e)=>{
     e.preventDefault();
     addTodo();
-    console.log(alltodos);
 })
 
 // function to fetch todos from the django backend
