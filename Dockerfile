@@ -35,7 +35,7 @@
     COPY Backend/ /app/Backend/
     COPY APIs/ /app/APIs/
     COPY manage.py .
-    COPY Frontend/ /app/Frontend/
+    # COPY Frontend/ /app/Frontend/
     
     # Expose the port the app runs on
     EXPOSE 8000

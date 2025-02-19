@@ -3,7 +3,8 @@ version: "3.8"
 services:
     nginx:
         build: 
-          context: ./nginx
+           context: .  
+           dockerfile: Nginx/Dockerfile
         container_name: nginx_container
         networks: 
           - notes-app-network
