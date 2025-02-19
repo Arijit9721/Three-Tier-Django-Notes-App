@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from APIs.views import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('APIs.urls')),  
+    path('api/', include('APIs.urls')),
+    path('', health_check, name='root_health_check'),  
 ]
