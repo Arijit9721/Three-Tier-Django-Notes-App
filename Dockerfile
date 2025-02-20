@@ -35,11 +35,8 @@
     COPY Backend/ /app/Backend/
     COPY APIs/ /app/APIs/
     COPY manage.py .
-    # COPY Frontend/ /app/Frontend/
     
     # Expose the port the app runs on
     EXPOSE 8000
     
-    # Command to run the application (overridden by Docker Compose)
-    # CMD ["gunicorn", "Backend.wsgi:application", "--bind", "0.0.0.0:8000"]
     
