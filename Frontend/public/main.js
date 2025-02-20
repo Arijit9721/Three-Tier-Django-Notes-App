@@ -1,75 +1,92 @@
-// usefull variables
-const form = document.querySelector('form')
-const form_input= document.getElementById("todo-input")
-const submit = document.getElementById("button")
-const ul = document.getElementById("todo-list")
+// Useful variables
+const form = document.querySelector("form");
+const form_input = document.getElementById("todo-input");
+const submit = document.getElementById("button");
+const ul = document.getElementById("todo-list");
 
-
-// main port for the django backend
-const BASE_URL = "http://127.0.0.1:8000/api/todos/"
+// Main port for the Django backend
+const BASE_URL = "http://127.0.0.1:8000/api/todos/";
 
 // Fetch all todos when page loads
 document.addEventListener("DOMContentLoaded", fetchTodos);
 
-// main function to handle form submitions
-form.addEventListener("submit",(e)=>{
+// Handle form submission
+form.addEventListener("submit", (e) => {
     e.preventDefault();
     addTodo();
-})
+});
 
-// function to fetch todos from the django backend
+// Function to fetch todos from the Django backend
 function fetchTodos() {
     fetch(BASE_URL)
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
             ul.innerHTML = "";
-            data.forEach(todo => {
+            data.forEach((todo) => {
                 const todo_item = create_todo(todo);
                 ul.append(todo_item);
             });
         })
-        .catch(error => console.error("Error fetching todos:", error));
-    }
+        .catch((error) => console.error("Error fetching todos:", error));
+}
 
-
-// helper function to add todos to the database
-function addTodo(){
-    form_value = form_input.value.trim();
+// Helper function to add todos to the database
+function addTodo() {
+    const form_value = form_input.value.trim();
 
     if (form_value.length > 0) {
-        fetch(`${BASE_URL}create/`, {
+        fetch(BASE_URL, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify({ text: form_value, is_completed: false })
+            body: JSON.stringify({ text: form_value, is_completed: false }),
         })
-        .then(response => response.json())
-        .then(() => {
-            fetchTodos(); // Refresh list after adding
-            form_input.value = ""; // Clear input field
-        })
-        .catch(error => console.error("Error adding todo:", error));
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`Error adding todo: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(() => {
+                fetchTodos(); // Refresh list after adding
+                form_input.value = ""; // Clear input field
+            })
+            .catch((error) => console.error("Error adding todo:", error));
     }
 }
 
-
-// function to delete a todo from the database
+// Function to delete a todo from the database
 function deleteTodo(todoId) {
-    fetch(`${BASE_URL}${todoId}/delete/`, { method: "DELETE" })
-        .then(() => fetchTodos()) // Refresh list after deletion
-        .catch(error => console.error("Error deleting todo:", error));
+    fetch(`${BASE_URL}${todoId}/`, { method: "DELETE" })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`Error deleting todo: ${response.statusText}`);
+            }
+            fetchTodos(); // Refresh list after deletion
+        })
+        .catch((error) => console.error("Error deleting todo:", error));
 }
 
 // Function to toggle between completion status
 function toggleTodo(todoId, isCompleted) {
-    fetch(`${BASE_URL}${todoId}/update/`, {
+    fetch(`${BASE_URL}${todoId}/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ is_completed: !isCompleted }) // Toggle value
+        body: JSON.stringify({ is_completed: !isCompleted }),
     })
-    .then(() => fetchTodos()) // Refresh list
-    .catch(error => console.error("Error updating todo:", error));
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`Error updating todo: ${response.statusText}`);
+            }
+            fetchTodos(); // Refresh list
+        })
+        .catch((error) => console.error("Error updating todo:", error));
 }
 
 // Helper function to create todo items
@@ -78,7 +95,7 @@ function create_todo(todo) {
     todoli.className = "todo";
 
     const todoId = `todo-${todo.id}`;
-    
+
     todoli.innerHTML = `
         <input type="checkbox" id="${todoId}" ${todo.is_completed ? "checked" : ""}>
         <label class="custom-checkbox" for="${todoId}">
@@ -108,5 +125,3 @@ function create_todo(todo) {
 
     return todoli;
 }
-
-
